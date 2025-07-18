@@ -8,7 +8,14 @@ import './App.css';
 function App() {
     const [rows, setRows] = useState([]);
     const [loading, setLoading] = useState(true);
-
+    const [denied, setDenied] = useState(false);
+    useEffect(()=>{
+        invoke('getUserAccess').then(({allowed}) => {
+            if (!allowed){
+                setDenied(true)
+            }
+        })
+    },[])
     useEffect(() => {
         (async () => {
             try {
@@ -65,6 +72,15 @@ function App() {
         );
     }
 
+    if (denied) {
+        return (
+            <div className="app-container">
+                <div className="access-denied">
+                    You do not have permission to view this data.
+                </div>
+            </div>
+        );
+    }
     return (
         <div className="app-container">
             <div className="button-container">
