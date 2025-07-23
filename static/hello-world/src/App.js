@@ -4,18 +4,45 @@ import { formatDate } from './utils/helper';
 import { exportToWord } from './utils/wordExporter';
 import { GrDocumentCsv, GrDocumentWord } from "react-icons/gr";
 import './App.css';
-
+import {
+    useReactTable,
+    getCoreRowModel,
+    getPaginationRowModel,
+    flexRender,
+    createColumnHelper,
+} from '@tanstack/react-table';
+import DataTable from './components/DataTable';
 function App() {
     const [rows, setRows] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [denied, setDenied] = useState(false);
-    useEffect(()=>{
-        invoke('getUserAccess').then(({allowed}) => {
-            if (!allowed){
-                setDenied(true)
-            }
-        })
-    },[])
+    const columnHelper = createColumnHelper();
+    const columns = [
+        columnHelper.accessor(row => row.assignee, {
+            id: 'assignee',
+            header: 'Assignee',
+            cell: info => info.getValue(),
+        }),
+        columnHelper.accessor(row => formatDate(row.date), {
+            id: 'date',
+            header: 'Date',
+            cell: info => info.getValue(),
+        }),
+        columnHelper.accessor(row => row.workItem, {
+            id: 'workItem',
+            header: 'Work Item',
+            cell: info => info.getValue(),
+        }),
+        columnHelper.accessor(row => row.timeSpent, {
+            id: 'timeSpent',
+            header: 'Time Spent',
+            cell: info => info.getValue()
+        }),
+        columnHelper.accessor(row => row.comment, {
+            id: 'comment',
+            header: 'Comment',
+            cell: info => info.getValue() || 'No comment'
+        }),
+    ];
     useEffect(() => {
         (async () => {
             try {
@@ -28,6 +55,8 @@ function App() {
             }
         })();
     }, []);
+
+
 
     const exportCSV = () => {
         const headers = ['Assignee', 'Date', 'Work Item', 'Time Spent', 'Comment'];
@@ -71,29 +100,19 @@ function App() {
             </div>
         );
     }
-
-    if (denied) {
-        return (
-            <div className="app-container">
-                <div className="access-denied">
-                    You do not have permission to view this data.
-                </div>
-            </div>
-        );
-    }
     return (
         <div className="app-container">
             <div className="button-container">
-                <button 
-                    className="export-button csv-button" 
+                <button
+                    className="export-button csv-button"
                     onClick={exportCSV}
                     disabled={rows.length === 0}
                 >
                     <GrDocumentCsv className="export-icon" />
                     Export as CSV
                 </button>
-                <button 
-                    className="export-button word-button" 
+                <button
+                    className="export-button word-button"
                     onClick={exportWord}
                     disabled={rows.length === 0}
                 >
@@ -101,43 +120,13 @@ function App() {
                     Export as Word
                 </button>
             </div>
-            
+
             {rows.length === 0 ? (
                 <div className="no-data">
                     No data available to display
                 </div>
             ) : (
-                <div className="table-container">
-                    <table className="data-table">
-                        <thead>
-                            <tr>
-                                <th>Assignee</th>
-                                <th>Date</th>
-                                <th>Work Item</th>
-                                <th>Time Spent</th>
-                                <th>Comment</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {rows.map((row, i) => (
-                                <tr key={i}>
-                                    <td>{row.assignee}</td>
-                                    <td>{new Date(row.date).toLocaleString('en-GB', {
-                                        day: '2-digit',
-                                        month: 'short',
-                                        year: '2-digit',
-                                        hour: '2-digit',
-                                        minute: '2-digit',
-                                        hour12: true
-                                    })}</td>
-                                    <td>{row.workItem}</td>
-                                    <td>{row.timeSpent}</td>
-                                    <td>{row.comment || 'No comment' }</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                <DataTable data={rows} columns={columns} pageSize={20}/>
             )}
         </div>
     );

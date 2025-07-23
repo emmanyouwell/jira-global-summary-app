@@ -3,69 +3,54 @@ import api, { route } from '@forge/api';
 
 const resolver = new Resolver();
 
-resolver.define('getIssues', async (req) => {
-    const meRes = await api.asUser().requestJira(route`/rest/api/3/myself`);
-    const me = await meRes.json();
-    console.log(me);
+async function fetchAllWorklogs(issueKey) {
+    const allWorklogs = [];
+    let startAt = 0;
+    let total = 0;
 
+    do {
+        const res = await api.asUser().requestJira(
+            route`/rest/api/3/issue/${encodeURIComponent(issueKey)}/worklog?startAt=${startAt}&maxResults=100`
+        );
+        const json = await res.json();
+
+        allWorklogs.push(...json.worklogs);
+        total = json.total;
+        startAt += json.worklogs.length;
+    } while (allWorklogs.length < total);
+
+    return allWorklogs;
+}
+resolver.define('getIssues', async (req) => {
     const projectKey = req.context.extension.project.key;
     const issueRes = await api.asUser().requestJira(
-        route`/rest/api/3/search?jql=project=${projectKey}&maxResults=50`
+        route`/rest/api/3/search?jql=project=${projectKey} AND worklogAuthor IS NOT EMPTY&maxResults=100`
     );
     const issues = (await issueRes.json()).issues;
 
-    const rows = [];
-
-    for (const issue of issues) {
-        const worklogRes = await api.asUser().requestJira(
-            route`/rest/api/3/issue/${issue.key}/worklog`
-        );
-        const worklogs = (await worklogRes.json()).worklogs;
-
-        for (const wl of worklogs) {
-            rows.push({
+    const worklogPromises = issues.map(async (issue) => {
+        try {
+            const worklogs = await fetchAllWorklogs(issue.key);
+            return worklogs.map((wl) => ({
                 assignee: wl.author.displayName,
                 date: wl.started,
-                workItem: issue.key + ' - ' + issue.fields.summary,
+                workItem: `${issue.key} - ${issue.fields.summary}`,
                 timeSpent: wl.timeSpent,
                 comment: wl.comment?.content?.[0]?.content?.[0]?.text || '',
-            });
+            }));
+        } catch (err) {
+            console.error(`Failed to fetch worklog for ${issue.key}:`, err);
+            return [];
         }
-    }
+    });
+    const results = await Promise.allSettled(worklogPromises);
+
+    // Flatten only fulfilled ones
+    const rows = results
+        .filter((res) => res.status === 'fulfilled')
+        .flatMap((res) => res.value);
 
     return rows;
-});
-
-resolver.define('getUserAccess', async (req) => {
-    const meRes = await api.asUser().requestJira(route`/rest/api/3/myself`);
-    const me = await meRes.json();
-    const groups = me.groups.items.map(g => g.name);
-    const accountId = me.accountId;
-
-    // Check if user is in forbidden groups
-    const forbiddenGroups = ['Support'];
-    if (groups.some(g => forbiddenGroups.includes(g))) {
-        return { allowed: false };
-    }
-
-    // Check project roles
-    const key = req.context.extension.project?.key || req.context.extension.issue?.fields?.project?.key;
-    const rolesRes = await api.asUser().requestJira(route`/rest/api/3/project/${key}/role`);
-    const roles = await rolesRes.json();
-    console.log('Roles:', roles);
-    const forbiddenRoles = ['TK-Support', 'TK-Management'];
-
-    for (const [name, url] of Object.entries(roles)) {
-        if (forbiddenRoles.includes(name)) {
-            const roleDetailsRes = await api.asUser().requestJira(url);
-            const roleDetails = await roleDetailsRes.json();
-
-            const isInRole = roleDetails.actors.some(actor => actor.accountId === accountId);
-            if (isInRole) return { allowed: false };
-        }
-    }
-
-    return { allowed: true };
 });
 
 

@@ -1,8 +1,10 @@
+*{
+  box-sizing: border-box;
+}
 /* App container */
 .app-container {
   padding: 20px;
-  max-width: 1200px;
-  margin: 0 auto;
+  width: 100%;
 }
 
 /* Loading spinner */
@@ -18,14 +20,18 @@
   width: 20px;
   height: 20px;
   border: 2px solid #f3f3f3;
-  border-top: 2px solid #0052CC;
+  border-top: 2px solid #0052cc;
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Button container */
@@ -34,6 +40,8 @@
   gap: 12px;
   flex-wrap: wrap;
   margin-bottom: 24px;
+  align-items: center;
+  padding: 4px;
 }
 
 /* Button styles */
@@ -45,7 +53,7 @@
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -100,13 +108,13 @@
 .data-table {
   border-collapse: collapse;
   width: 100%;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-size: 14px;
   background: white;
 }
 
 .data-table th {
-  background: #0052CC;
+  background: #0052cc;
   color: white;
   font-weight: 600;
   text-transform: uppercase;
@@ -169,31 +177,31 @@
   .app-container {
     padding: 10px;
   }
-  
+
   .data-table {
     font-size: 12px;
   }
-  
+
   .data-table th,
   .data-table td {
     padding: 8px 6px;
   }
-  
+
   .data-table th:first-child,
   .data-table td:first-child {
     padding-left: 12px;
   }
-  
+
   .data-table th:last-child,
   .data-table td:last-child {
     padding-right: 12px;
   }
-  
+
   .button-container {
     flex-direction: column;
     gap: 8px;
   }
-  
+
   .export-button {
     width: 100%;
     justify-content: center;
@@ -225,4 +233,36 @@
   color: #666;
   font-style: italic;
   font-size: 16px;
+}
+
+.table-footer {
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.pagination-button-container {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+  padding: 4px;
+}
+
+.pagination-button {
+  border: none;
+  border-radius: 6px;
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background-color: #000;
 }
