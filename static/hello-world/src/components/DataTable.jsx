@@ -1,21 +1,28 @@
-import React from 'react'
+import React, { useState } from 'react'
 import {
     useReactTable,
     getCoreRowModel,
     getPaginationRowModel,
-    flexRender
+    flexRender,
+    getSortedRowModel
 } from '@tanstack/react-table';
 const DataTable = ({ data = [], columns = [], pageSize = 5 }) => {
+    
 
     const table = useReactTable({
         data,
         columns,
         getCoreRowModel: getCoreRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
+        getSortedRowModel: getSortedRowModel(),
         initialState: {
             pagination: {
                 pageSize
             },
+            sorting: [{
+                id: 'date',
+                desc: true
+            }]
         },
     });
     return (
@@ -24,15 +31,20 @@ const DataTable = ({ data = [], columns = [], pageSize = 5 }) => {
                 <thead>
                     {table.getHeaderGroups().map(headerGroup => (
                         <tr key={headerGroup.id}>
-                            {headerGroup.headers.map(header => (
-                                <th
-                                    key={header.id}
-                                >
-                                    {header.isPlaceholder
-                                        ? null
-                                        : flexRender(header.column.columnDef.header, header.getContext())}
-                                </th>
-                            ))}
+                            {headerGroup.headers.map(header => {
+                                const sorted = header.column.getIsSorted();
+                                return (
+                                    <th
+                                        key={header.id}
+                                        onClick={header.column.getToggleSortingHandler()}
+                                        style={{ cursor: 'pointer', userSelect: 'none' }}
+                                    >
+                                        {flexRender(header.column.columnDef.header, header.getContext())}
+                                        {sorted === 'asc' && ' 🔼'}
+                                        {sorted === 'desc' && ' 🔽'}
+                                    </th>
+                                );
+                            })}
                         </tr>
                     ))}
                 </thead>

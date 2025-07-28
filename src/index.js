@@ -100,7 +100,7 @@ resolver.define("getIssues", async (req) => {
     const rows = results
       .filter((res) => res.status === "fulfilled")
       .flatMap((res) => res.value);
-
+    
     return {
       statusCode: 200,
       body: rows,

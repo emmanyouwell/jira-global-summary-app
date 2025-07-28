@@ -23,6 +23,8 @@ function App() {
       id: "date",
       header: "Date",
       cell: (info) => info.getValue(),
+      sortingFn: 'datetime',
+      enableSorting: true,
     }),
     columnHelper.accessor((row) => row.workItem, {
       id: "workItem",
