@@ -1,50 +1,43 @@
-import React, { useState } from 'react'
+
 import {
     useReactTable,
     getCoreRowModel,
-    getPaginationRowModel,
     flexRender,
     getSortedRowModel
 } from '@tanstack/react-table';
-const DataTable = ({ data = [], columns = [], pageSize = 5 }) => {
-    
+
+const DataTable = ({ data = [], columns = [], pageSize = 5, total, setPageIndex, pageIndex, isLastPage }) => {
+
 
     const table = useReactTable({
         data,
         columns,
-        getCoreRowModel: getCoreRowModel(),
-        getPaginationRowModel: getPaginationRowModel(),
-        getSortedRowModel: getSortedRowModel(),
-        initialState: {
+        pageCount: Math.ceil(total / pageSize),
+        state: {
             pagination: {
-                pageSize
+                pageIndex,
+                pageSize,
             },
-            sorting: [{
-                id: 'date',
-                desc: true
-            }]
+        },
+        manualPagination: true,
+        getCoreRowModel: getCoreRowModel(),
+        onPaginationChange: (updater) => {
+            const next = typeof updater === 'function' ? updater({ pageIndex, pageSize }) : updater;
+            setPageIndex(next.pageIndex);
         },
     });
+
     return (
         <div className="table-container">
             <table className="data-table">
                 <thead>
-                    {table.getHeaderGroups().map(headerGroup => (
-                        <tr key={headerGroup.id}>
-                            {headerGroup.headers.map(header => {
-                                const sorted = header.column.getIsSorted();
-                                return (
-                                    <th
-                                        key={header.id}
-                                        onClick={header.column.getToggleSortingHandler()}
-                                        style={{ cursor: 'pointer', userSelect: 'none' }}
-                                    >
-                                        {flexRender(header.column.columnDef.header, header.getContext())}
-                                        {sorted === 'asc' && ' 🔼'}
-                                        {sorted === 'desc' && ' 🔽'}
-                                    </th>
-                                );
-                            })}
+                    {table.getHeaderGroups().map((hg) => (
+                        <tr key={hg.id}>
+                            {hg.headers.map((header) => (
+                                <th key={header.id}>
+                                    {flexRender(header.column.columnDef.header, header.getContext())}
+                                </th>
+                            ))}
                         </tr>
                     ))}
                 </thead>
@@ -73,22 +66,14 @@ const DataTable = ({ data = [], columns = [], pageSize = 5 }) => {
                 </tbody>
             </table>
             <div className="table-footer">
-                <p>
-                    Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
-                </p>
                 <div className="pagination-button-container">
-                    <button
-                        onClick={() => table.previousPage()}
-                        disabled={!table.getCanPreviousPage()}
-                        className="pagination-button"
-                    >
+                    <button onClick={() => setPageIndex((prev) => Math.max(prev - 1, 0))} disabled={pageIndex === 0}>
                         Previous
                     </button>
-                    <button
-                        onClick={() => table.nextPage()}
-                        disabled={!table.getCanNextPage()}
-                        className="pagination-button"
-                    >
+                    <span>
+                        Page {pageIndex + 1} of {Math.ceil(total / pageSize)}
+                    </span>
+                    <button onClick={() => setPageIndex((prev) => (isLastPage ? prev : prev + 1))} disabled={isLastPage}>
                         Next
                     </button>
                 </div>

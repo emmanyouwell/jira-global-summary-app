@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { invoke } from "@forge/bridge";
+import { invoke, view } from "@forge/bridge";
 import { formatDate } from "./utils/helper";
 import { exportToWord } from "./utils/wordExporter";
 import { GrDocumentCsv, GrDocumentWord } from "react-icons/gr";
@@ -10,6 +10,13 @@ import { createColumnHelper } from "@tanstack/react-table";
 import DataTable from "./components/DataTable";
 
 function App() {
+  const [data, setData] = useState([]);
+  const [pageIndex, setPageIndex] = useState(0);
+  const [pageSize] = useState(20);
+  const [total, setTotal] = useState(0);
+  const [isLastPage, setIsLastPage] = useState(false);
+
+
   const [rows, setRows] = useState([]);
   const [status, setStatus] = useState("loading");
   const columnHelper = createColumnHelper();
@@ -42,26 +49,35 @@ function App() {
       cell: (info) => info.getValue() || "No comment",
     }),
   ];
+  const fetchData = async () => {
+    setStatus("loading");
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const response = await invoke("getIssues");
+    try {
+      const response = await invoke('getIssues', {
+        startAt: pageIndex * pageSize,
+        pageSize,
+      });
 
-        if (response.statusCode === 403) {
-          setStatus("denied");
-        } else if (response.statusCode === 500) {
-          setStatus("error");
-        } else {
-          setRows(response.body);
-          setStatus("success");
-        }
-      } catch (error) {
-        console.error("Error fetching issues:", error);
-        setStatus("error");
+      if (response.statusCode === 200) {
+        const { rows, pagination } = response.body;
+        setData(rows);
+        setTotal(pagination.total);
+        setIsLastPage(pagination.isLast);
+      } else {
+        console.error('Error fetching issues:', response.body);
+        setData([]);
       }
-    })();
-  }, []);
+    } catch (error) {
+      console.error('Error invoking getIssues:', error);
+      setData([]);
+      setStatus("error")
+    } finally {
+      setStatus("success");
+    }
+  };
+  useEffect(() => {
+    fetchData();
+  }, [pageIndex]);
 
   const exportCSV = () => {
     const headers = ["Assignee", "Date", "Work Item", "Time Spent", "Comment"];
@@ -139,7 +155,7 @@ function App() {
             <button
               className="export-button csv-button"
               onClick={exportCSV}
-              disabled={rows.length === 0}
+              disabled={data.length === 0}
             >
               <GrDocumentCsv className="export-icon" />
               Export as CSV
@@ -147,17 +163,17 @@ function App() {
             <button
               className="export-button word-button"
               onClick={exportWord}
-              disabled={rows.length === 0}
+              disabled={data.length === 0}
             >
               <GrDocumentWord className="export-icon" />
               Export as Word
             </button>
           </div>
 
-          {rows.length === 0 ? (
+          {data.length === 0 ? (
             <div className="no-data">No data available to display</div>
           ) : (
-            <DataTable data={rows} columns={columns} pageSize={20} />
+            <DataTable data={data} columns={columns} pageSize={pageSize} total={total} pageIndex={pageIndex} setPageIndex={setPageIndex} isLastPage={isLastPage}/>
           )}
         </>
       )}
