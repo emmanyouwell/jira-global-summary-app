@@ -1,13 +1,35 @@
-*{
+/* ==========================================================================
+   GLOBAL STYLES
+   ========================================================================== */
+
+* {
   box-sizing: border-box;
 }
-/* App container */
+
+body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden; 
+}
+
+/* ==========================================================================
+   APP CONTAINER
+   ========================================================================== */
+
 .app-container {
   padding: 20px;
   width: 100%;
+  max-width: 100vw;
+  max-height: 100vh;
+  overflow: hidden; 
+  display: flex;
+  flex-direction: column;
 }
 
-/* Loading spinner */
+/* ==========================================================================
+   LOADING & SPINNER STYLES
+   ========================================================================== */
+
 .loading-container {
   display: flex;
   align-items: center;
@@ -25,18 +47,27 @@
   animation: spin 1s linear infinite;
 }
 
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
+.spinner-small {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #f3f3f3;
+  border-top: 2px solid #0052cc;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
 }
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ==========================================================================
+   ALERT STYLES
+   ========================================================================== */
 
 .alert {
   display: flex;
-  align-items: center; /* icon + text vertical alignment */
+  align-items: center;
   gap: 12px;
   border: 1px solid transparent;
   border-radius: 4px;
@@ -48,9 +79,9 @@
 .alert .icon {
   font-size: 30px;
   display: flex;
-  align-items: center; 
+  align-items: center;
   justify-content: center;
-  flex-shrink: 0; 
+  flex-shrink: 0;
 }
 
 .alert-content {
@@ -77,20 +108,20 @@
   color: #842029;
 }
 
+/* ==========================================================================
+   BUTTON CONTAINER & EXPORT BUTTONS
+   ========================================================================== */
 
-
-/* Button container */
 .button-container {
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
   margin-bottom: 24px;
   align-items: center;
-  justify-content: space-between; 
+  justify-content: space-between;
   padding: 4px;
 }
 
-/* Button styles */
 .export-buttons-group {
   display: flex;
   gap: 12px;
@@ -112,6 +143,43 @@
   color: white;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
+
+.export-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  opacity: 0.6;
+  transform: none;
+  box-shadow: none;
+}
+
+.csv-button {
+  background-color: #28a745;
+}
+
+.csv-button:hover:not(:disabled) {
+  background-color: #218838;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.word-button {
+  background-color: #007bff;
+}
+
+.word-button:hover:not(:disabled) {
+  background-color: #0056b3;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.export-icon {
+  width: 16px;
+  height: 16px;
+}
+
+/* ==========================================================================
+   SEARCH INPUT STYLES
+   ========================================================================== */
 
 .search-input-container {
   position: relative;
@@ -164,63 +232,57 @@
   pointer-events: none;
 }
 
-.spinner-small {
-  width: 16px;
-  height: 16px;
-  border: 2px solid #f3f3f3;
-  border-top: 2px solid #0052cc;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
+/* ==========================================================================
+   TABLE STYLES
+   ========================================================================== */
 
-
-.csv-button {
-  background-color: #28a745;
-}
-
-.csv-button:hover:not(:disabled) {
-  background-color: #218838;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-}
-
-.word-button {
-  background-color: #007bff;
-}
-
-.word-button:hover:not(:disabled) {
-  background-color: #0056b3;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-}
-
-.export-button:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
-  opacity: 0.6;
-  transform: none;
-  box-shadow: none;
-}
-
-/* Export icon */
-.export-icon {
-  width: 16px;
-  height: 16px;
-}
-
-/* Table Container */
 .table-container {
   background: white;
   border-radius: 4px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
   border: 1px solid #e1e5e9;
+  height: calc(100vh - 160px); 
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  overflow: hidden; 
 }
 
-/* Table styles */
+.table-wrapper {
+  flex: 1;
+  overflow-y: auto; 
+  overflow-x: hidden; 
+  scrollbar-width: thin; 
+  scrollbar-color: #888 #f1f1f1; 
+}
+
+/* Keep only vertical scrollbar styling */
+.table-wrapper::-webkit-scrollbar {
+  width: 6px;
+  height: 0px; /* Remove horizontal scrollbar */
+}
+
+.table-wrapper::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+.table-wrapper::-webkit-scrollbar:horizontal {
+  display: none;
+}
+
 .data-table {
   border-collapse: collapse;
   width: 100%;
+  table-layout: fixed; /* Force table to fit container */
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-size: 14px;
   background: white;
@@ -233,38 +295,63 @@
   text-transform: uppercase;
   font-size: 12px;
   letter-spacing: 0.5px;
-  padding: 16px 12px;
+  padding: 16px 8px; /* Reduce padding for better fit */
   text-align: left;
   border: none;
   position: sticky;
   top: 0;
   z-index: 10;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .data-table th:first-child {
   border-top-left-radius: 4px;
-  padding-left: 20px;
+  padding-left: 16px;
+  width: 18%; /* Assignee column */
+}
+
+.data-table th:nth-child(2) {
+  width: 15%; /* Date column */
+}
+
+.data-table th:nth-child(3) {
+  width: 30%; /* Work Item column */
+}
+
+.data-table th:nth-child(4) {
+  width: 15%; /* Time Spent column */
 }
 
 .data-table th:last-child {
   border-top-right-radius: 4px;
-  padding-right: 20px;
+  padding-right: 16px;
+  width: 22%; /* Comment column */
 }
 
 .data-table td {
-  padding: 12px;
+  padding: 12px 8px;
   border-bottom: 1px solid #e1e5e9;
   vertical-align: top;
   color: #333;
   line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  word-wrap: break-word;
 }
 
 .data-table td:first-child {
-  padding-left: 20px;
+  padding-left: 16px;
 }
 
 .data-table td:last-child {
-  padding-right: 20px;
+  padding-right: 16px;
+  white-space: normal; /* Allow comment text to wrap */
+  word-wrap: break-word;
+  max-height: none;
+  overflow: visible;
 }
 
 .data-table tbody tr {
@@ -277,7 +364,7 @@
 
 .data-table tbody tr:hover {
   background-color: #e3f2fd;
-  transform: scale(1.01);
+  transform: scale(1.005);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
@@ -285,61 +372,12 @@
   border-bottom: none;
 }
 
-/* Responsive table */
-@media (max-width: 768px) {
-  .app-container {
-    padding: 10px;
-  }
 
-  .data-table {
-    font-size: 12px;
-  }
 
-  .data-table th,
-  .data-table td {
-    padding: 8px 6px;
-  }
+/* ==========================================================================
+   NO DATA MESSAGE
+   ========================================================================== */
 
-  .data-table th:first-child,
-  .data-table td:first-child {
-    padding-left: 12px;
-  }
-
-  .data-table th:last-child,
-  .data-table td:last-child {
-    padding-right: 12px;
-  }
-
-  .button-container {
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .export-button {
-    width: 100%;
-    justify-content: center;
-  }
-}
-
-/* Custom scrollbar for table container */
-.table-container::-webkit-scrollbar {
-  height: 8px;
-}
-
-.table-container::-webkit-scrollbar-track {
-  background: #f1f1f1;
-}
-
-.table-container::-webkit-scrollbar-thumb {
-  background: #888;
-  border-radius: 4px;
-}
-
-.table-container::-webkit-scrollbar-thumb:hover {
-  background: #555;
-}
-
-/* No data message */
 .no-data {
   text-align: center;
   padding: 40px;
@@ -348,12 +386,18 @@
   font-size: 16px;
 }
 
+/* ==========================================================================
+   PAGINATION STYLES
+   ========================================================================== */
+
 .table-footer {
   padding: 16px 20px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-top: 1px solid #e1e5e9;
+  background-color: white;
+  flex-shrink: 0;
 }
 
 .pagination-button-container {
@@ -401,15 +445,57 @@
   white-space: nowrap;
 }
 
+/* ==========================================================================
+   RESPONSIVE STYLES
+   ========================================================================== */
+
 @media (max-width: 768px) {
+  .app-container {
+    padding: 10px;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  .table-container {
+    height: calc(100vh - 140px);
+  }
+
   .button-container {
     flex-direction: column;
     gap: 12px;
     align-items: stretch;
+    margin-bottom: 16px;
   }
-  
+
   .export-buttons-group {
     justify-content: center;
+  }
+
+  .search-input-container {
+    width: 100%;
+  }
+
+  .search-input {
+    width: 100%;
+  }
+
+  .data-table {
+    font-size: 12px;
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: 8px 4px;
+  }
+
+  .data-table th:first-child,
+  .data-table td:first-child {
+    padding-left: 8px;
+  }
+
+  .data-table th:last-child,
+  .data-table td:last-child {
+    padding-right: 8px;
   }
 
   .pagination-button-container {
@@ -417,7 +503,7 @@
     gap: 8px;
     justify-content: center;
   }
-  
+
   .pagination-button-container button {
     min-width: 70px;
     padding: 8px 12px;
