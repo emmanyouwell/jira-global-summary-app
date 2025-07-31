@@ -5,21 +5,40 @@ import { exportToWord } from "./utils/wordExporter";
 import { GrDocumentCsv, GrDocumentWord } from "react-icons/gr";
 import { PiWarning } from "react-icons/pi";
 import { MdErrorOutline } from "react-icons/md";
+import { IoSearchOutline } from "react-icons/io5";
 import "./App.css";
 import { createColumnHelper } from "@tanstack/react-table";
 import DataTable from "./components/DataTable";
 
+function useDebounce(value, delay = 500) {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => clearTimeout(timer);
+  }, [value, delay]);
+
+  return debouncedValue;
+}
+
 function App() {
   const [data, setData] = useState([]);
   const [pageIndex, setPageIndex] = useState(0);
-  const [pageSize] = useState(20);
+  const [pageSize] = useState(10);
   const [total, setTotal] = useState(0);
   const [isLastPage, setIsLastPage] = useState(false);
-
 
   const [rows, setRows] = useState([]);
   const [status, setStatus] = useState("loading");
   const columnHelper = createColumnHelper();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [appliedSearchTerm, setAppliedSearchTerm] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
+
   const columns = [
     columnHelper.accessor((row) => row.assignee, {
       id: "assignee",
@@ -30,7 +49,7 @@ function App() {
       id: "date",
       header: "Date",
       cell: (info) => info.getValue(),
-      sortingFn: 'datetime',
+      sortingFn: "datetime",
       enableSorting: true,
     }),
     columnHelper.accessor((row) => row.workItem, {
@@ -49,13 +68,19 @@ function App() {
       cell: (info) => info.getValue() || "No comment",
     }),
   ];
-  const fetchData = async () => {
-    setStatus("loading");
+
+  const fetchData = async ({ isInitial = false } = {}) => {
+    if (isInitial) {
+      setStatus("loading");
+    } else {
+      setIsSearching(true); // real-time search
+    }
 
     try {
-      const response = await invoke('getIssues', {
+      const response = await invoke("getIssues", {
         startAt: pageIndex * pageSize,
         pageSize,
+        searchTerm: appliedSearchTerm.trim(),
       });
 
       if (response.statusCode === 200) {
@@ -63,21 +88,25 @@ function App() {
         setData(rows);
         setTotal(pagination.total);
         setIsLastPage(pagination.isLast);
+        setStatus("success");
       } else {
-        console.error('Error fetching issues:', response.body);
-        setData([]);
+        setStatus("error");
       }
     } catch (error) {
-      console.error('Error invoking getIssues:', error);
-      setData([]);
-      setStatus("error")
+      console.error("Error invoking getIssues:", error);
+      setStatus("error");
     } finally {
-      setStatus("success");
+      setIsSearching(false);
     }
   };
+
   useEffect(() => {
-    fetchData();
-  }, [pageIndex]);
+    fetchData({ isInitial: false });
+  }, [pageIndex, appliedSearchTerm]);
+
+  useEffect(() => {
+    setAppliedSearchTerm(debouncedSearchTerm);
+  }, [debouncedSearchTerm]);
 
   const exportCSV = () => {
     const headers = ["Assignee", "Date", "Work Item", "Time Spent", "Comment"];
@@ -152,28 +181,58 @@ function App() {
       {status === "success" && (
         <>
           <div className="button-container">
-            <button
-              className="export-button csv-button"
-              onClick={exportCSV}
-              disabled={data.length === 0}
-            >
-              <GrDocumentCsv className="export-icon" />
-              Export as CSV
-            </button>
-            <button
-              className="export-button word-button"
-              onClick={exportWord}
-              disabled={data.length === 0}
-            >
-              <GrDocumentWord className="export-icon" />
-              Export as Word
-            </button>
+            <div className="export-buttons-group">
+              <button
+                className="export-button csv-button"
+                onClick={exportCSV}
+                disabled={data.length === 0}
+              >
+                <GrDocumentCsv className="export-icon" />
+                Export as CSV
+              </button>
+              <button
+                className="export-button word-button"
+                onClick={exportWord}
+                disabled={data.length === 0}
+              >
+                <GrDocumentWord className="export-icon" />
+                Export as Word
+              </button>
+            </div>
+
+            <div className="search-input-container">
+              <IoSearchOutline className="search-icon" />
+              <input
+                type="text"
+                className="search-input"
+                placeholder="Search by assignee, work item, or comment..."
+                value={searchTerm}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setSearchTerm(val);
+                  setPageIndex(0);
+                }}
+              />
+              {isSearching && (
+                <div className="search-spinner">
+                  <div className="spinner-small"></div>
+                </div>
+              )}
+            </div>
           </div>
 
           {data.length === 0 ? (
             <div className="no-data">No data available to display</div>
           ) : (
-            <DataTable data={data} columns={columns} pageSize={pageSize} total={total} pageIndex={pageIndex} setPageIndex={setPageIndex} isLastPage={isLastPage}/>
+            <DataTable
+              data={data}
+              columns={columns}
+              pageSize={pageSize}
+              total={total}
+              pageIndex={pageIndex}
+              setPageIndex={setPageIndex}
+              isLastPage={isLastPage}
+            />
           )}
         </>
       )}
