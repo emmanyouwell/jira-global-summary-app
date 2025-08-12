@@ -88,6 +88,8 @@ async function getAllWorklogData(projectKey) {
     .filter((r) => r.status === "fulfilled")
     .flatMap((r) => r.value);
 
+  allRows.sort((a, b) => new Date(b.date) - new Date(a.date));
+
   // 💾 Cache the results
   dataCache.set(cacheKey, {
     data: allRows,
@@ -147,7 +149,10 @@ resolver.define("getIssues", async (req) => {
     let filteredRows = allRows;
 
     if (selectedDeveloper) {
-      filteredRows = filteredRows.filter((row) => row.assigneeId === selectedDeveloper);
+      filteredRows = filteredRows.filter((row) => {
+        return row.assigneeId === selectedDeveloper;
+      });
+      console.log(`After developer filter: ${filteredRows.length} rows`);
     }
 
     if (searchTerm) {
@@ -155,7 +160,8 @@ resolver.define("getIssues", async (req) => {
         return (
           row.assignee.toLowerCase().includes(searchTerm) ||
           row.workItem.toLowerCase().includes(searchTerm) ||
-          row.comment.toLowerCase().includes(searchTerm)
+          (row.comment && row.comment.toLowerCase().includes(searchTerm))
+
         );
       });
     }
@@ -169,6 +175,8 @@ resolver.define("getIssues", async (req) => {
         );
       });
     }
+
+    filteredRows.sort((a, b) => new Date(b.date) - new Date(a.date));
 
     const paginatedRows = filteredRows.slice(startAt, startAt + pageSize);
 

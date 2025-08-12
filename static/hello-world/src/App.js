@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { invoke, view } from "@forge/bridge";
 import { formatDate } from "./utils/helper";
 import { exportToWord } from "./utils/wordExporter";
@@ -48,10 +48,18 @@ function App() {
   const debouncedEndDate = useDebounce(endDate, 500);
 
   const columns = [
-    columnHelper.accessor((row) => row.assignee, {
-      id: "assignee",
+    columnHelper.accessor("assignee", {
       header: "Assignee",
-      cell: (info) => info.getValue(),
+      cell: (info) => (
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <img
+            src={info.row.original.assigneeAvatar}
+            alt={info.getValue()}
+            style={{ width: "20px", height: "20px", borderRadius: "50%" }}
+          />
+          <span>{info.getValue()}</span>
+        </div>
+      ),
     }),
     columnHelper.accessor((row) => formatDate(row.date), {
       id: "date",
@@ -60,24 +68,21 @@ function App() {
       sortingFn: "datetime",
       enableSorting: true,
     }),
-    columnHelper.accessor((row) => row.workItem, {
-      id: "workItem",
+    columnHelper.accessor("workItem", {
       header: "Work Item",
       cell: (info) => info.getValue(),
     }),
-    columnHelper.accessor((row) => row.timeSpent, {
-      id: "timeSpent",
+    columnHelper.accessor("timeSpent", {
       header: "Time Spent",
       cell: (info) => info.getValue(),
     }),
-    columnHelper.accessor((row) => row.comment, {
-      id: "comment",
+    columnHelper.accessor("comment", {
       header: "Comment",
       cell: (info) => info.getValue() || "No comment",
     }),
   ];
 
-  const fetchData = async ({ isInitial = false } = {}) => {
+  const fetchData = useCallback(async ({ isInitial = false } = {}) => {
     if (isInitial) {
       setStatus("loading");
     } else {
@@ -96,11 +101,18 @@ function App() {
 
       if (response.statusCode === 200) {
         const { rows, developers: devList, pagination } = response.body;
+        
+        // Data is already sorted by date descending from backend
         setData(rows);
         setDevelopers(devList || []);
         setTotal(pagination.total);
         setIsLastPage(pagination.isLast);
         setStatus("success");
+        
+        console.log(`📊 Loaded ${rows.length} rows for page ${pageIndex + 1}`);
+        if (rows.length > 0) {
+          console.log(`📅 Date range: ${rows[rows.length - 1].date} to ${rows[0].date}`);
+        }
       } else {
         setStatus("error");
       }
@@ -110,7 +122,8 @@ function App() {
     } finally {
       setIsSearching(false);
     }
-  };
+  }, [pageIndex, pageSize, appliedSearchTerm, debouncedStartDate, debouncedEndDate, selectedDeveloper]);
+
 
   useEffect(() => {
     setAppliedSearchTerm(debouncedSearchTerm);
