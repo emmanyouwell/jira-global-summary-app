@@ -5,7 +5,7 @@ import { exportToWord } from "./utils/wordExporter";
 import { GrDocumentCsv, GrDocumentWord } from "react-icons/gr";
 import { PiWarning } from "react-icons/pi";
 import { MdErrorOutline } from "react-icons/md";
-import { IoSearchOutline } from "react-icons/io5";
+import { IoSearchOutline, IoCaretDownOutline } from "react-icons/io5";
 import "./App.css";
 import { createColumnHelper } from "@tanstack/react-table";
 import DataTable from "./components/DataTable";
@@ -34,10 +34,18 @@ function App() {
   const [rows, setRows] = useState([]);
   const [status, setStatus] = useState("loading");
   const columnHelper = createColumnHelper();
+  const [isExportDropdownOpen, setIsExportDropdownOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [appliedSearchTerm, setAppliedSearchTerm] = useState("");
   const [isSearching, setIsSearching] = useState(false);
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [selectedDeveloper, setSelectedDeveloper] = useState("");
+  const [developers, setDevelopers] = useState([]);
+  const [isDeveloperDropdownOpen, setIsDeveloperDropdownOpen] = useState(false);
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
+  const debouncedStartDate = useDebounce(startDate, 500);
+  const debouncedEndDate = useDebounce(endDate, 500);
 
   const columns = [
     columnHelper.accessor((row) => row.assignee, {
@@ -73,7 +81,7 @@ function App() {
     if (isInitial) {
       setStatus("loading");
     } else {
-      setIsSearching(true); // real-time search
+      setIsSearching(true);
     }
 
     try {
@@ -81,11 +89,15 @@ function App() {
         startAt: pageIndex * pageSize,
         pageSize,
         searchTerm: appliedSearchTerm.trim(),
+        startDate: debouncedStartDate || null,
+        endDate: debouncedEndDate || null,
+        selectedDeveloper: selectedDeveloper || null
       });
 
       if (response.statusCode === 200) {
-        const { rows, pagination } = response.body;
+        const { rows, developers: devList, pagination } = response.body;
         setData(rows);
+        setDevelopers(devList || []);
         setTotal(pagination.total);
         setIsLastPage(pagination.isLast);
         setStatus("success");
@@ -101,12 +113,21 @@ function App() {
   };
 
   useEffect(() => {
-    fetchData({ isInitial: false });
-  }, [pageIndex, appliedSearchTerm]);
-
-  useEffect(() => {
     setAppliedSearchTerm(debouncedSearchTerm);
   }, [debouncedSearchTerm]);
+
+  useEffect(() => {
+    fetchData({ isInitial: false });
+  }, [pageIndex, appliedSearchTerm, debouncedStartDate, debouncedEndDate, selectedDeveloper]);
+
+  const resetFilters = () => {
+    setSearchTerm("");
+    setAppliedSearchTerm("");
+    setStartDate("");
+    setEndDate("");
+    setSelectedDeveloper("");
+    setPageIndex(0);
+  };
 
   const exportCSV = () => {
     const headers = ["Assignee", "Date", "Work Item", "Time Spent", "Comment"];
@@ -138,6 +159,12 @@ function App() {
   const exportWord = () => {
     exportToWord(rows);
   };
+
+  const getSelectedDeveloperName = () => {
+    const dev = developers.find(d => d.id === selectedDeveloper);
+    return dev ? dev.name : "All Developers";
+  };
+
 
   return (
     <div className="app-container">
@@ -181,22 +208,138 @@ function App() {
       {status === "success" && (
         <>
           <div className="button-container">
-            <div className="export-buttons-group">
-              <button
-                className="export-button csv-button"
-                onClick={exportCSV}
-                disabled={data.length === 0}
+            <div className="controls-group">
+              <div className="export-dropdown-container">
+                <div className="dropdown">
+                  <button 
+                    className="dropdown-toggle" 
+                    type="button"
+                    onClick={() => setIsExportDropdownOpen(!isExportDropdownOpen)}
+                  >
+                    Export
+                    <span className={`dropdown-arrow ${isExportDropdownOpen ? 'open' : ''}`}>
+                      <IoCaretDownOutline />
+                    </span>
+                  </button>
+                  {isExportDropdownOpen && (
+                    <div className="dropdown-menu">
+                      <button
+                        className="dropdown-item"
+                        onClick={() => {
+                          exportCSV();
+                          setIsExportDropdownOpen(false);
+                        }}
+                        disabled={data.length === 0}
+                      >
+                        <GrDocumentCsv />
+                        Export as CSV
+                      </button>
+                      <button
+                        className="dropdown-item"
+                        onClick={() => {
+                          exportWord();
+                          setIsExportDropdownOpen(false);
+                        }}
+                        disabled={data.length === 0}
+                      >
+                        <GrDocumentWord />
+                        Export as Word
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="developer-filter-container">
+                <div className="developer-dropdown">
+                  <button 
+                    className="developer-dropdown-toggle" 
+                    type="button"
+                    onClick={() => setIsDeveloperDropdownOpen(!isDeveloperDropdownOpen)}
+                  >
+                    <div className="selected-developer">
+                      {selectedDeveloper ? (
+                        <>
+                          <img 
+                            src={developers.find(d => d.id === selectedDeveloper)?.avatar} 
+                            alt=""
+                            className="developer-avatar-small"
+                          />
+                          <span>{getSelectedDeveloperName()}</span>
+                        </>
+                      ) : (
+                        <span>All Developers</span>
+                      )}
+                    </div>
+                    <span className={`dropdown-arrow ${isDeveloperDropdownOpen ? 'open' : ''}`}><IoCaretDownOutline /></span>
+                  </button>
+                  {isDeveloperDropdownOpen && (
+                    <div className="developer-dropdown-menu">
+                      <button
+                        className="developer-dropdown-item"
+                        onClick={() => {
+                          setSelectedDeveloper("");
+                          setPageIndex(0);
+                          setIsDeveloperDropdownOpen(false);
+                        }}
+                      >
+                        <span className="developer-info">
+                          <span className="developer-name">All Developers</span>
+                        </span>
+                      </button>
+                      {developers.map((dev) => (
+                        <button
+                          key={dev.id}
+                          className="developer-dropdown-item"
+                          onClick={() => {
+                            setSelectedDeveloper(dev.id);
+                            setPageIndex(0);
+                            setIsDeveloperDropdownOpen(false);
+                          }}
+                        >
+                          <img 
+                            src={dev.avatar} 
+                            alt={dev.name}
+                            className="developer-avatar"
+                          />
+                          <span className="developer-info">
+                            <span className="developer-name">{dev.name}</span>
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="date-filter-container">
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => {
+                    setStartDate(e.target.value);
+                    setPageIndex(0);
+                  }}
+                />
+                <span>to</span>
+                <input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => {
+                    setEndDate(e.target.value);
+                    setPageIndex(0);
+                  }}
+                />
+              </div>
+
+              <button 
+                className="reset-filters-button"
+                onClick={resetFilters}
+                disabled={!searchTerm && !startDate && !endDate && !selectedDeveloper}
+                title="Clear all filters"
               >
-                <GrDocumentCsv className="export-icon" />
-                Export as CSV
-              </button>
-              <button
-                className="export-button word-button"
-                onClick={exportWord}
-                disabled={data.length === 0}
-              >
-                <GrDocumentWord className="export-icon" />
-                Export as Word
+                <span className="reset-icon">⟲</span>
+                Reset
               </button>
             </div>
 
@@ -205,7 +348,7 @@ function App() {
               <input
                 type="text"
                 className="search-input"
-                placeholder="Search by assignee, work item, or comment..."
+                placeholder="Search..."
                 value={searchTerm}
                 onChange={(e) => {
                   const val = e.target.value;
@@ -220,7 +363,7 @@ function App() {
               )}
             </div>
           </div>
-
+        
           {data.length === 0 ? (
             <div className="no-data">No data available to display</div>
           ) : (

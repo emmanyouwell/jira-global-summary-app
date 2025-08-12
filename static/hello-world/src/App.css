@@ -17,7 +17,7 @@ body {
    ========================================================================== */
 
 .app-container {
-  padding: 20px;
+  /* padding: 20px; */
   width: 100%;
   max-width: 100vw;
   max-height: 100vh;
@@ -109,72 +109,128 @@ body {
 }
 
 /* ==========================================================================
-   BUTTON CONTAINER & EXPORT BUTTONS
+   BUTTON CONTAINER & CONTROLS
    ========================================================================== */
 
 .button-container {
   display: flex;
   gap: 12px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   margin-bottom: 24px;
   align-items: center;
   justify-content: space-between;
   padding: 4px;
+  min-height: 44px;
 }
 
-.export-buttons-group {
+.controls-group {
   display: flex;
   gap: 12px;
   align-items: center;
+  flex-wrap: nowrap;
 }
 
-.export-button {
-  border: none;
+/* ==========================================================================
+   EXPORT DROPDOWN STYLES
+   ========================================================================== */
+
+.export-dropdown-container {
+  position: relative;
+}
+
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-toggle {
+  background-color: #f8f9fa;
+  color: #333;
+  border: 2px solid #e1e5e9;
   border-radius: 6px;
-  padding: 12px 20px;
+  padding: 10px 14px;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   display: flex;
   align-items: center;
   gap: 8px;
-  color: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  min-width: 100px;
+  height: 44px;
+  white-space: nowrap;
+  justify-content: space-between;
 }
 
-.export-button:disabled {
-  background-color: #ccc;
+.dropdown-toggle:hover {
+  border-color: #0052cc;
+  box-shadow: 0 0 0 3px rgba(0, 82, 204, 0.1);
+}
+
+.dropdown-arrow {
+  font-size: 12px;
+  transition: transform 0.2s ease;
+}
+
+.dropdown-arrow.open {
+  transform: rotate(180deg);
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: white;
+  border: 1px solid #e1e5e9;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  min-width: 160px;
+  margin-top: 4px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 14px;
+  border: none;
+  background: none;
+  color: #333;
+  font-size: 14px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  text-align: left;
+}
+
+.dropdown-item:first-child {
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+}
+
+.dropdown-item:last-child {
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
+}
+
+.dropdown-item:hover:not(:disabled) {
+  background-color: #f8f9fa;
+}
+
+.dropdown-item:disabled {
+  color: #999;
   cursor: not-allowed;
   opacity: 0.6;
-  transform: none;
-  box-shadow: none;
 }
 
-.csv-button {
-  background-color: #28a745;
-}
-
-.csv-button:hover:not(:disabled) {
-  background-color: #218838;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-}
-
-.word-button {
-  background-color: #007bff;
-}
-
-.word-button:hover:not(:disabled) {
-  background-color: #0056b3;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-}
-
-.export-icon {
-  width: 16px;
-  height: 16px;
+.dropdown-item svg {
+  font-size: 16px;
+  flex-shrink: 0;
 }
 
 /* ==========================================================================
@@ -185,6 +241,7 @@ body {
   position: relative;
   display: flex;
   align-items: center;
+  flex-shrink: 0;
 }
 
 .search-icon {
@@ -199,11 +256,12 @@ body {
 .search-input {
   border: 2px solid #e1e5e9;
   border-radius: 6px;
-  padding: 12px 40px 12px 40px;
+  padding: 10px 40px 10px 40px;
   font-size: 14px;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   transition: all 0.2s ease;
-  width: 250px;
+  width: 220px;
+  height: 44px;
   background-color: white;
   color: #333;
 }
@@ -233,6 +291,240 @@ body {
 }
 
 /* ==========================================================================
+   DATE FILTER STYLES - COMPACT
+   ========================================================================== */
+
+.date-filter-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.date-filter-container input[type="date"] {
+  border: 2px solid #e1e5e9;
+  border-radius: 6px;
+  padding: 10px 8px;
+  font-size: 14px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  transition: all 0.2s ease;
+  width: 110px;
+  height: 44px;
+  background-color: white;
+  color: #333;
+  cursor: pointer;
+}
+
+.date-filter-container input[type="date"]:focus {
+  outline: none;
+  border-color: #0052cc;
+  box-shadow: 0 0 0 3px rgba(0, 82, 204, 0.1);
+}
+
+.date-filter-container input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+
+.date-filter-container input[type="date"]:hover::-webkit-calendar-picker-indicator {
+  opacity: 1;
+}
+
+.date-filter-container span {
+  font-size: 14px;
+  font-weight: 500;
+  color: #6b7280;
+  margin: 0 2px;
+  flex-shrink: 0;
+}
+
+/* ==========================================================================
+   RESET FILTERS BUTTON
+   ========================================================================== */
+
+.reset-filters-button {
+  border: 2px solid #dc3545;
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: white;
+  color: #dc3545;
+  min-width: 80px;
+  height: 44px;
+  white-space: nowrap;
+}
+
+.reset-filters-button:hover:not(:disabled) {
+  background-color: #dc3545;
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(220, 53, 69, 0.2);
+}
+
+.reset-filters-button:disabled {
+  background-color: #f5f5f5;
+  color: #999;
+  border-color: #ddd;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.reset-icon {
+  font-size: 16px;
+  font-weight: bold;
+  transition: transform 0.2s ease;
+}
+
+.reset-filters-button:hover:not(:disabled) .reset-icon {
+  transform: rotate(-180deg);
+}
+
+/* ==========================================================================
+   DEVELOPER FILTER STYLES
+   ========================================================================== */
+
+.developer-filter-container {
+  position: relative;
+}
+
+.developer-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.developer-dropdown-toggle {
+  background-color: #f8f9fa;
+  color: #333;
+  border: 2px solid #e1e5e9;
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  min-width: 140px;
+  max-width: 180px;
+  height: 44px;
+  justify-content: space-between;
+  white-space: nowrap;
+}
+
+.developer-dropdown-toggle:hover {
+  border-color: #0052cc;
+  box-shadow: 0 0 0 3px rgba(0, 82, 204, 0.1);
+}
+
+.selected-developer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.selected-developer span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.developer-avatar-small {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.dropdown-arrow.open {
+  transform: rotate(180deg);
+}
+
+.developer-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: white;
+  border: 1px solid #e1e5e9;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  min-width: 200px;
+  margin-top: 4px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.developer-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 14px;
+  border: none;
+  background: none;
+  color: #333;
+  font-size: 14px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  text-align: left;
+}
+
+.developer-dropdown-item:first-child {
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+}
+
+.developer-dropdown-item:last-child {
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
+}
+
+.developer-dropdown-item:hover {
+  background-color: #f8f9fa;
+}
+
+.developer-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.developer-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.developer-name {
+  font-weight: 500;
+  color: #333;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ==========================================================================
    TABLE STYLES
    ========================================================================== */
 
@@ -241,11 +533,12 @@ body {
   border-radius: 4px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   border: 1px solid #e1e5e9;
-  height: calc(100vh - 160px); 
+  flex: 1;
   display: flex;
   flex-direction: column;
   width: 100%;
   overflow: hidden; 
+  min-height: 0;
 }
 
 .table-wrapper {
@@ -254,6 +547,7 @@ body {
   overflow-x: hidden; 
   scrollbar-width: thin; 
   scrollbar-color: #888 #f1f1f1; 
+  min-height: 0;
 }
 
 /* Keep only vertical scrollbar styling */
@@ -282,9 +576,9 @@ body {
 .data-table {
   border-collapse: collapse;
   width: 100%;
-  table-layout: fixed; /* Force table to fit container */
+  table-layout: fixed; 
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  font-size: 14px;
+  font-size: 12px;
   background: white;
 }
 
@@ -295,7 +589,7 @@ body {
   text-transform: uppercase;
   font-size: 12px;
   letter-spacing: 0.5px;
-  padding: 16px 8px; /* Reduce padding for better fit */
+  padding: 16px 8px;
   text-align: left;
   border: none;
   position: sticky;
@@ -348,7 +642,7 @@ body {
 
 .data-table td:last-child {
   padding-right: 16px;
-  white-space: normal; /* Allow comment text to wrap */
+  white-space: normal;
   word-wrap: break-word;
   max-height: none;
   overflow: visible;
@@ -449,6 +743,31 @@ body {
    RESPONSIVE STYLES
    ========================================================================== */
 
+@media (max-width: 1024px) {
+  .button-container {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .controls-group {
+    gap: 8px;
+  }
+
+  .search-input {
+    width: 180px;
+  }
+
+  .dropdown-toggle,
+  .developer-dropdown-toggle {
+    min-width: 120px;
+    max-width: 140px;
+  }
+
+  .date-filter-container input[type="date"] {
+    width: 100px;
+  }
+}
+
 @media (max-width: 768px) {
   .app-container {
     padding: 10px;
@@ -457,7 +776,8 @@ body {
   }
 
   .table-container {
-    height: calc(100vh - 140px);
+    flex: 1;
+    min-height: 0;
   }
 
   .button-container {
@@ -465,18 +785,84 @@ body {
     gap: 12px;
     align-items: stretch;
     margin-bottom: 16px;
+    flex-shrink: 0;
+    min-height: auto;
   }
 
-  .export-buttons-group {
+  .controls-group {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px;
     justify-content: center;
+  }
+
+  .export-dropdown-container,
+  .developer-filter-container,
+  .reset-filters-button {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .dropdown-toggle,
+  .developer-dropdown-toggle,
+  .reset-filters-button {
+    width: 100%;
+    min-width: 80px;
+    justify-content: center;
+  }
+
+  .dropdown-menu,
+  .developer-dropdown-menu {
+    width: 100%;
+    left: 0;
+    right: 0;
   }
 
   .search-input-container {
     width: 100%;
+    order: -1;
   }
 
   .search-input {
     width: 100%;
+  }
+
+  .date-filter-container {
+    justify-content: center;
+    gap: 6px;
+    flex: 1;
+  }
+
+  .date-filter-container input[type="date"] {
+    width: 90px;
+    font-size: 13px;
+    padding: 8px 6px;
+  }
+
+  .date-filter-container span {
+    font-size: 13px;
+    margin: 0 1px;
+  }
+
+  .reset-filters-button {
+    width: 100%;
+    justify-content: center;
+    padding: 12px 16px;
+  }
+
+  .developer-filter-container {
+    width: 100%;
+  }
+
+  .developer-dropdown-toggle {
+    width: 100%;
+    min-width: unset;
+  }
+
+  .developer-dropdown-menu {
+    width: 100%;
+    left: 0;
+    right: 0;
   }
 
   .data-table {
@@ -507,6 +893,6 @@ body {
   .pagination-button-container button {
     min-width: 70px;
     padding: 8px 12px;
-    font-size: 13px;
+    font-size: 12px;
   }
 }

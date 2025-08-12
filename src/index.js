@@ -69,6 +69,8 @@ async function getAllWorklogData(projectKey) {
 
         return worklogs.map((wl) => ({
           assignee: wl.author.displayName,
+          assigneeId: wl.author.accountId,
+          assigneeAvatar: wl.author.avatarUrls["24x24"],
           date: wl.started,
           workItem: `${key} - ${issue.fields.summary}`,
           timeSpent: wl.timeSpent,
@@ -104,6 +106,9 @@ resolver.define("getIssues", async (req) => {
     const accountId = userData.accountId;
 
     const searchTerm = (req.payload.searchTerm || "").toLowerCase();
+    const startDate = req.payload.startDate ? new Date(req.payload.startDate) : null;
+    const endDate = req.payload.endDate ? new Date(req.payload.endDate) : null;
+    const selectedDeveloper = req.payload.selectedDeveloper || null;
     const startAt = req.payload.startAt || 0;
     const pageSize = req.payload.pageSize || 20;
 
@@ -126,7 +131,25 @@ resolver.define("getIssues", async (req) => {
     // 🚀 Get data from cache (fast!) or fetch once
     const allRows = await getAllWorklogData(projectKey);
 
+    const uniqueDevelopers = Array.from(
+      new Map(
+        allRows.map(row => [
+          row.assigneeId,
+          {
+            id: row.assigneeId,
+            name: row.assignee,
+            avatar: row.assigneeAvatar
+          }
+        ])
+      ).values()
+    ).sort((a, b) => a.name.localeCompare(b.name));
+
     let filteredRows = allRows;
+
+    if (selectedDeveloper) {
+      filteredRows = filteredRows.filter((row) => row.assigneeId === selectedDeveloper);
+    }
+
     if (searchTerm) {
       filteredRows = allRows.filter((row) => {
         return (
@@ -137,12 +160,23 @@ resolver.define("getIssues", async (req) => {
       });
     }
 
+    if (startDate || endDate) {
+      filteredRows = filteredRows.filter((row) => {
+        const rowDate = new Date(row.date);
+        return (
+          (!startDate || rowDate >= startDate) &&
+          (!endDate || rowDate <= endDate)
+        );
+      });
+    }
+
     const paginatedRows = filteredRows.slice(startAt, startAt + pageSize);
 
     return {
       statusCode: 200,
       body: {
         rows: paginatedRows,
+        developers: uniqueDevelopers,
         pagination: {
           startAt,
           maxResults: pageSize,
